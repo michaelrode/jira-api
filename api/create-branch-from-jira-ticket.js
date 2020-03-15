@@ -1,7 +1,11 @@
 require('dotenv').config()
-const git = require('cmd-executor').git
-
+const { git } = require('cmd-executor')
 var JiraClient = require('jira-connector')
+
+if (!process.argv[2])
+    return console.error('Error: Must provide Jira url as argument.')
+const validUrl = process.argv[2].match(/rigup.atlassian/)
+if (!validUrl) return console.error('Error: Invalid Jira URL.')
 
 const jira = new JiraClient({
     host: 'rigup.atlassian.net',
@@ -29,7 +33,14 @@ const createBranchName = async () => {
     return `${key}-${formattedName}`
 }
 
+const getProjectName = async () => {
+    const fields = await getJiraFields()
+    const project = fields.key.split('-')[0].toLowerCase()
+    console.log('Project', project)
+    return project
+}
 ;(async () => {
     const branchName = await createBranchName()
+    const projectName = await getProjectName()
     await git.checkout(`-b ${branchName}`)
-})()
+})().catch(error => console.log(error.message))
