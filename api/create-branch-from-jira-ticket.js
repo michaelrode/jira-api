@@ -1,6 +1,10 @@
-require('dotenv').config()
 const { git } = require('cmd-executor')
-var JiraClient = require('jira-connector')
+const JiraClient = require('jira-connector')
+const memoize = require('fast-memoize')
+
+const currentWorkingDirectory = process.cwd()
+process.chdir('/Users/michaelrode/Code/projects/jira-api')
+require('dotenv').config()
 
 if (!process.argv[2])
     return console.error('Error: Must provide Jira url as argument.')
@@ -15,17 +19,36 @@ const jira = new JiraClient({
     },
 })
 
+process.chdir(currentWorkingDirectory)
+
 const getJiraFields = async () => {
     const issueKey = process.argv[2].match(/WRK.\d{3,6}/)[0]
     const res = await jira.issue.getIssue({
         issueKey,
-        fields: ['key', 'summary'],
     })
-    return { key: res.key, name: res.fields.summary }
+    return {
+        key: res.key,
+        name: res.fields.summary,
+        type: res.fields.issuetype,
+    }
+}
+const memoizedGetJiraFields = memoize(getJiraFields)
+
+const validateIssueType = async () => {
+    const {
+        type: { subtask, name },
+    } = await memoizedGetJiraFields()
+
+    if (subtask || name === 'Standalone Task') return
+    throw `${name} is not a valid issue type`
 }
 
+validateIssueType().catch(error => {
+    console.log('Error:', error)
+    process.exit()
+})
 const createBranchName = async () => {
-    const { key, name } = await getJiraFields()
+    const { key, name, type } = await memoizedGetJiraFields()
     const formattedName = name
         .toLowerCase()
         .split(' ')
@@ -33,14 +56,19 @@ const createBranchName = async () => {
     return `${key}-${formattedName}`
 }
 
-const getProjectName = async () => {
-    const fields = await getJiraFields()
-    const project = fields.key.split('-')[0].toLowerCase()
-    console.log('Project', project)
-    return project
+const newBranch = async branchName => {
+    const currentBranches = await git.branch()
+    return !currentBranches.includes(branchName)
+}
+
+const formattedBranchName = async () => {
+    let branchName = await createBranchName()
+    const isNewBranch = await newBranch(branchName)
+    return isNewBranch ? `-b ${branchName}` : branchName
 }
 ;(async () => {
-    const branchName = await createBranchName()
-    const projectName = await getProjectName()
-    await git.checkout(`-b ${branchName}`)
-})().catch(error => console.log(error.message))
+    const branchName = await formattedBranchName()
+    await git.checkout(`${branchName}`)
+})().catch(error => {
+    console.log('Error', error)
+})
