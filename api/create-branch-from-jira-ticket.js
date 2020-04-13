@@ -50,6 +50,7 @@ validateIssueType().catch(error => {
 const createBranchName = async () => {
     const { key, name, type } = await memoizedGetJiraFields()
     const formattedName = name
+        .trim()
         .toLowerCase()
         .split(' ')
         .join('-')
