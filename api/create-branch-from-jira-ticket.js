@@ -1,6 +1,7 @@
 const { git } = require('cmd-executor')
 const JiraClient = require('jira-connector')
 const memoize = require('fast-memoize')
+const changeCase = require('change-case')
 
 const currentWorkingDirectory = process.cwd()
 process.chdir('/Users/michaelrode/Code/projects/jira-api')
@@ -49,12 +50,7 @@ validateIssueType().catch(error => {
 })
 const createBranchName = async () => {
     const { key, name, type } = await memoizedGetJiraFields()
-    const formattedName = name
-        .trim()
-        .toLowerCase()
-        .split(' ')
-        .join('-')
-    return `${key}-${formattedName}`
+    return `${key}-${changeCase.paramCase(name)}`
 }
 
 const newBranch = async branchName => {
