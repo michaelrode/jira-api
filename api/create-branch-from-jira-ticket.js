@@ -9,13 +9,13 @@ require('dotenv').config()
 
 if (!process.argv[2])
     return console.error('Error: Must provide Jira url as argument.')
-const validUrl = process.argv[2].match(/rigup.atlassian/)
+const validUrl = process.argv[2].match(/workrise.atlassian/)
 if (!validUrl) return console.error('Error: Invalid Jira URL.')
 
 const jira = new JiraClient({
-    host: 'rigup.atlassian.net',
+    host: 'workrise.atlassian.net',
     basic_auth: {
-        email: 'michael.rode@rigup.co',
+        email: 'michael.rode@workrise.com',
         api_token: process.env.JIRA_TOKEN,
     },
 })
@@ -23,10 +23,13 @@ const jira = new JiraClient({
 process.chdir(currentWorkingDirectory)
 
 const getJiraFields = async () => {
-    const issueKey = process.argv[2].match(/WRK.\d{3,6}/)[0]
+    const key =
+        process.argv[2].match(/WRK.\d{3,6}/) ||
+        process.argv[2].match(/EE.\d{3,6}/)
     const res = await jira.issue.getIssue({
-        issueKey,
+        issueKey: key[0],
     })
+
     return {
         key: res.key,
         name: res.fields.summary,
@@ -40,7 +43,7 @@ const validateIssueType = async () => {
         type: { subtask, name },
     } = await memoizedGetJiraFields()
 
-    if (subtask || name === 'Standalone Task') return
+    if (name) return
     throw `${name} is not a valid issue type`
 }
 
