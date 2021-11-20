@@ -1,5 +1,5 @@
 const { git } = require('cmd-executor')
-import { Version2Client } from 'jira.js'
+const { Version2Client } = require('jira.js')
 const memoize = require('fast-memoize')
 const changeCase = require('change-case')
 
@@ -13,7 +13,7 @@ const validUrl = process.argv[2].match(/workrise.atlassian/)
 if (!validUrl) return console.error('Error: Invalid Jira URL.')
 
 const jira = new Version2Client({
-    host: 'workrise.atlassian.net',
+    host: 'https://workrise.atlassian.net',
     basic_auth: {
         email: 'michael.rode@workrise.com',
         api_token: process.env.JIRA_TOKEN,
@@ -26,9 +26,11 @@ const getJiraFields = async () => {
     const key =
         process.argv[2].match(/WRK.\d{3,6}/) ||
         process.argv[2].match(/EE.\d{3,6}/)
-    const res = await jira.issue.getIssue({
-        issueKey: key[0],
+    console.log("🚀 ~ file: create-branch-from-jira-ticket.js ~ line 27 ~ getJiraFields ~ key", key[0])
+    const res = await jira.issues.getIssue({
+        issueIdOrKey: key[0],
     })
+    console.log("🚀 ~ file: create-branch-from-jira-ticket.js ~ line 33 ~ getJiraFields ~ res", res)
 
     return {
         key: res.key,
