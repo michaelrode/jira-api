@@ -1,5 +1,5 @@
 const { git } = require('cmd-executor')
-const JiraClient = require('jira-connector')
+import { Version2Client } from 'jira.js'
 const memoize = require('fast-memoize')
 const changeCase = require('change-case')
 
@@ -12,7 +12,7 @@ if (!process.argv[2])
 const validUrl = process.argv[2].match(/workrise.atlassian/)
 if (!validUrl) return console.error('Error: Invalid Jira URL.')
 
-const jira = new JiraClient({
+const jira = new Version2Client({
     host: 'workrise.atlassian.net',
     basic_auth: {
         email: 'michael.rode@workrise.com',
