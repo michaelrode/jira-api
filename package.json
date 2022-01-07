@@ -8,12 +8,11 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
-        "axios": "^0.24.0",
-        "change-case": "^4.1.1",
-        "cmd-executor": "^1.1.1",
-        "dotenv": "^8.2.0",
-        "fast-memoize": "^2.5.2",
-        "jira-connector": "^3.1.0"
+        "axios": "0.24.0",
+        "change-case": "4.1.1",
+        "cmd-executor": "1.1.1",
+        "dotenv": "8.2.0",
+        "fast-memoize": "2.5.2"
     },
     "devDependencies": {
         "prettier": "^1.19.1"
