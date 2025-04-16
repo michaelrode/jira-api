@@ -4,7 +4,7 @@ const changeCase = require('change-case')
 const axios = require('axios').default
 const { Version3Client } = require('jira.js')
 require('dotenv').config({
-    path: '/Users/michael.rode/code/general/jira-api/.env',
+    path: '/Users/michael.rode/code/tools/jira-api/.env',
 })
 
 const JIRA_HOST = 'https://workrise.atlassian.net'
